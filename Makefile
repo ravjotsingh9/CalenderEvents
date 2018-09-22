@@ -9,4 +9,6 @@ binary:
 	go build -o ecf_binary main.go 
 	-@chmod +x ecf_binary
 
+test:
+	go test -v
 	

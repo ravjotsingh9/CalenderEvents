@@ -7,7 +7,7 @@ import (
 )
 
 // NO overlapping
-func TestFindConflicts_1(t *testing.T) {
+func Test_ShouldReturnNoOverlappedEvent_WhenNoOverlapping(t *testing.T) {
 	// Data format and output map
 	defaultFormat := "2006-01-02 15:04:05"
 
@@ -63,7 +63,7 @@ func TestFindConflicts_1(t *testing.T) {
 }
 
 // Same end and start time
-func TestFindConflicts_2(t *testing.T) {
+func Test_ShouldReturnNoOverlappedEvent_WhenEndAndStartTimesOfTwoEventsAreSame(t *testing.T) {
 	// Data format and output map
 	defaultFormat := "2006-01-02 15:04:05"
 
@@ -119,7 +119,7 @@ func TestFindConflicts_2(t *testing.T) {
 }
 
 // One overlap
-func TestFindConflicts_3(t *testing.T) {
+func Test_ShouldReturnTwoOverlappedEvent_WhenTwoEventsOverlapped(t *testing.T) {
 	// Data format and output map
 	defaultFormat := "2006-01-02 15:04:05"
 
@@ -168,8 +168,9 @@ func TestFindConflicts_3(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
-
-	if len(overlappedEvents) != 2 {
+	_, ok1 := overlappedEvents["Running"]
+	_, ok2 := overlappedEvents["walking"]
+	if !((len(overlappedEvents) == 2) && (ok1) && (ok2)) {
 		t.Fail()
 	}
 }

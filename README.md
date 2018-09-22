@@ -9,7 +9,7 @@ make deps
 make
 ```
 
-#### Running
+#### Run
 You can provide your own data in the format presented in `testData/data.txt`, Or you can use the given generator to generate some random data. Following steps will generate 10 data entries:
 ```
 cd testData
@@ -18,7 +18,7 @@ make testDataGenerator
 ./generateData 10
 cd ..
 ```
-To run the conflict finder program, run the below:
+asTo run the conflict finder program, run as below:
 
 ```
 ./ecf_binary
