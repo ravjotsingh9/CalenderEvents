@@ -105,8 +105,13 @@ func findConflicts(eventList []eventEntry) (map[string]event, error) {
 	})
 
 	// Identify overlaps
+	largestEnd := eventList[0].End
 	for i := 1; i < len(eventList); i++ {
-		if !(compareTime(eventList[i-1].End, eventList[i].Start) || eventList[i-1].End.Equal(eventList[i].Start)) {
+		if compareTime(largestEnd, eventList[i-1].End) {
+			largestEnd = eventList[i-1].End
+		}
+		if !(compareTime(largestEnd, eventList[i].Start) || largestEnd.Equal(eventList[i].Start)) {
+
 			if _, ok := overlappedEvents[eventList[i-1].Name]; !ok {
 				overlappedEvents[eventList[i-1].Name] = event{eventList[i-1].Start, eventList[i-1].End}
 			}
