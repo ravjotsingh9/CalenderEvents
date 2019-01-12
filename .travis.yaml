@@ -1,0 +1,22 @@
+language: go
+
+go:
+  - "1.x"
+  - "1.8"
+  - "1.10.x"
+  - master
+
+go_import_path: github.com/ravjotsingh9/CalenderEvents
+
+os:
+  - linux
+  - linux-ppc64le
+
+services:
+  - docker
+
+before_script:
+  - make deps
+
+script:
+  - make 
