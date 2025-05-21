@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"sort"
 	"time"
+	"os"
 
 	"github.com/tatsushid/go-prettytable"
 )
@@ -18,10 +18,6 @@ const (
 type event struct {
 	Start time.Time `json: "start"`
 	End   time.Time `json:: "end"`
-}
-
-type events struct {
-	eventsMap map[string]event `json: "events"`
 }
 
 type eventEntry struct {
@@ -66,22 +62,59 @@ func printEvents(eventList map[string]event, str string) {
 
 // Reads file
 func readFile(path string) ([]eventEntry, error) {
-	dat, err := ioutil.ReadFile(path)
+	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error opening file: %w", err)
 	}
-	var eventJSON events
-	json.Unmarshal(dat, &eventJSON.eventsMap)
-	i := 0
-	var eventList = make([]eventEntry, len(eventJSON.eventsMap))
-	for e, val := range eventJSON.eventsMap {
-		var tmp eventEntry
-		tmp.Name = e
-		tmp.Start = val.Start
-		tmp.End = val.End
-		eventList[i] = tmp
-		i++
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	var eventList []eventEntry
+
+	// Read the opening curly brace '{'
+	t, err := decoder.Token()
+	if err != nil {
+		return nil, fmt.Errorf("error reading opening token: %w", err)
 	}
+	if t != json.Delim('{') {
+		return nil, fmt.Errorf("expected '{', got %v", t)
+	}
+
+	// Loop as long as decoder.More() is true
+	for decoder.More() {
+		// Read the event name (map key)
+		token, err := decoder.Token()
+		if err != nil {
+			return nil, fmt.Errorf("error reading event name token: %w", err)
+		}
+		eventName, ok := token.(string)
+		if !ok {
+			return nil, fmt.Errorf("expected event name string, got %v", token)
+		}
+
+		// Decode the event object (map value)
+		var ev event
+		if err := decoder.Decode(&ev); err != nil {
+			return nil, fmt.Errorf("error decoding event object for %s: %w", eventName, err)
+		}
+
+		// Create an eventEntry and append it to the list
+		eventList = append(eventList, eventEntry{
+			Name:  eventName,
+			Start: ev.Start,
+			End:   ev.End,
+		})
+	}
+
+	// Read the closing curly brace '}'
+	t, err = decoder.Token()
+	if err != nil {
+		return nil, fmt.Errorf("error reading closing token: %w", err)
+	}
+	if t != json.Delim('}') {
+		return nil, fmt.Errorf("expected '}', got %v", t)
+	}
+
 	return eventList, nil
 }
 
